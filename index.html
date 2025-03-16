@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Letter & Category Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: white;
+            color: black;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 80%;
+            max-width: 600px;
+        }
+        .letter {
+            font-size: 100px;
+            font-weight: bold;
+            color: darkblue;
+            text-shadow: 2px 2px 4px lightgray;
+        }
+        .category {
+            font-size: 24px;
+            margin-top: 10px;
+            color: darkblue;
+        }
+        .category span {
+            font-size: 30px;
+            color: black;
+            font-weight: bold;
+        }
+        .input-box {
+            margin-top: 20px;
+        }
+        input {
+            font-size: 20px;
+            padding: 10px;
+            border: 2px solid black;
+            border-radius: 10px;
+            width: 300px;
+            box-shadow: 4px 4px 10px gray;
+            text-align: center;
+        }
+        .timer {
+            font-size: 32px;
+            color: red;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .difficulty, .hint-toggle {
+            margin-bottom: 10px;
+        }
+        .button-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .button {
+            background: lightblue;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        .start-button {
+            background: green;
+            color: white;
+            font-size: 20px;
+            padding: 15px 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            cursor: pointer;
+        }
+        .incorrect {
+            border-color: red;
+            background-color: #ffcccc;
+        }
+        .hint {
+            font-size: 18px;
+            color: darkred;
+            margin-top: 10px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <button class="start-button" id="start">Start Game</button>
+    <select class="difficulty" id="difficulty">
+        <option>A1</option>
+        <option>A2</option>
+        <option>B1</option>
+        <option>B2</option>
+        <option>C1</option>
+        <option>C2</option>
+    </select>
+    <label class="hint-toggle">Show Hints: <input type="checkbox" id="show-hints"></label>
+    <div class="timer" id="timer" style="display: none;">120s</div>
+    <div class="game-container" style="display: none;">
+        <div class="letter" id="random-letter">A</div>
+        <div class="category">Category: <span id="category">Historical Figures</span></div>
+        <div class="input-box">
+            <input type="text" id="answer" placeholder="Type your answer...">
+        </div>
+        <div class="hint" id="hint">Hint: Apple, Apricot, Avocado</div>
+        <div class="button-container">
+            <button class="button" id="skip">Skip</button>
+        </div>
+    </div>
+    <div class="score" id="score" style="display: none; font-size: 24px; margin-top: 20px;"></div>
+    <audio id="correct-sound" src="https://www.fesliyanstudios.com/play-mp3/4386"></audio>
+    <audio id="incorrect-sound" src="https://www.fesliyanstudios.com/play-mp3/4387"></audio>
+    
+    <script>
+        const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+        const categories = {
+            A1: ["Fruits", "Animals", "Colors", "Shapes", "Weather", "Clothing", "Body Parts", "Household Items", "Drinks", "Toys"],
+        };
+        let validAnswers = { "Fruits": ["Apple", "Apricot", "Avocado"], "Animals": ["Antelope", "Alligator", "Armadillo"] };
+
+        let timerInterval;
+        let score = 0;
+        let timeLeft = 120;
+
+        document.getElementById("start").addEventListener("click", function() {
+            document.getElementById("start").style.display = "none";
+            document.querySelector(".game-container").style.display = "block";
+            document.getElementById("timer").style.display = "block";
+            document.getElementById("difficulty").style.display = "none";
+            document.getElementById("score").style.display = "none";
+            score = 0;
+            timeLeft = 120;
+            startGame();
+            startTimer();
+        });
+
+        function startGame() {
+            let letter, category;
+            do {
+                letter = letters[Math.floor(Math.random() * letters.length)];
+                const difficulty = document.getElementById("difficulty").value;
+                const categoryList = categories[difficulty];
+                category = categoryList[Math.floor(Math.random() * categoryList.length)];
+            } while (!validAnswers[category] || !validAnswers[category].some(word => word.startsWith(letter)));
+            
+            document.getElementById("random-letter").innerText = letter;
+            document.getElementById("category").innerText = category;
+            document.getElementById("answer").value = "";
+            document.getElementById("answer").classList.remove("incorrect");
+            
+            if (document.getElementById("show-hints").checked) {
+                document.getElementById("hint").innerText = "Hint: " + validAnswers[category].join(", ");
+                document.getElementById("hint").style.display = "block";
+            } else {
+                document.getElementById("hint").style.display = "none";
+            }
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById("timer").innerText = timeLeft + "s";
+                
+                if (timeLeft === 0) {
+                    clearInterval(timerInterval);
+                    document.querySelector(".game-container").style.display = "none";
+                    document.getElementById("timer").style.display = "none";
+                    document.getElementById("score").style.display = "block";
+                    document.getElementById("score").innerText = `Congratulations! Your score: ${score}`;
+                }
+            }, 1000);
+        }
+
+        document.getElementById("skip").addEventListener("click", startGame);
+    </script>
+</body>
+</html>
