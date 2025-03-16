@@ -141,6 +141,10 @@
             startGame();
         });
 
+        document.getElementById("difficulty").addEventListener("change", function() {
+            generateNewRound();
+        });
+
         function startGame() {
             document.getElementById("start").style.display = "none";
             document.querySelector(".game-container").style.display = "block";
@@ -152,38 +156,14 @@
             generateNewRound();
         }
 
-        function startTimer() {
-            clearInterval(timerInterval);
-            timerInterval = setInterval(() => {
-                timeLeft--;
-                document.getElementById("timer").innerText = `${timeLeft}s`;
-                if (timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    document.getElementById("score").innerText = `Game Over! Score: ${score}`;
-                    document.getElementById("score").style.display = "block";
-                }
-            }, 1000);
-        }
-
-        document.getElementById("skip").addEventListener("click", generateNewRound);
-        document.getElementById("answer").addEventListener("keydown", function(event) {
-            if (event.key === "Enter") {
-                checkAnswer();
-            }
-        });
-
-        function checkAnswer() {
-            let answer = document.getElementById("answer").value.trim();
-            let letter = document.getElementById("random-letter").innerText;
-            let category = document.getElementById("category").innerText;
+        function generateNewRound() {
+            let difficulty = document.getElementById("difficulty").value;
+            let categoryList = categories[difficulty] || categories.A1;
+            let letter = letters[Math.floor(Math.random() * letters.length)];
+            let category = categoryList[Math.floor(Math.random() * categoryList.length)];
             
-            if (answer.charAt(0).toUpperCase() === letter && validAnswers[category]?.includes(answer)) {
-                document.getElementById("correct-sound").play();
-                score++;
-                generateNewRound();
-            } else {
-                document.getElementById("incorrect-sound").play();
-            }
+            document.getElementById("random-letter").innerText = letter;
+            document.getElementById("category").innerText = category;
         }
     </script>
 </body>
