@@ -99,13 +99,14 @@
     </div>
 
     <script>
-        const categoryAnswers = {
+        const answerDatabase = {
             "Countries": ["Argentina", "Brazil", "Canada", "Denmark", "Egypt", "France", "Germany", "Hungary", "India", "Japan", "Kenya", "Lithuania"],
             "Cities": ["Amsterdam", "Barcelona", "Chicago", "Dubai", "Edinburgh", "Florence", "Geneva", "Helsinki", "Istanbul", "Jakarta"],
             "Animals": ["Antelope", "Bear", "Cat", "Dog", "Elephant", "Fox", "Giraffe", "Horse", "Iguana", "Jaguar"],
             "Foods": ["Apple", "Banana", "Cheese", "Doughnut", "Eggplant", "Fish", "Grapes", "Hamburger", "Ice Cream", "Juice"],
         };
         
+        const categories = Object.keys(answerDatabase);
         const letters = "ABCDEFGHIJKLMNOPRSTWYL".split('');
         
         let timeLeft = 60;
@@ -132,8 +133,11 @@
         
         answerInput.addEventListener("keydown", (event) => {
             if (event.key === "Enter" && gameActive) {
-                let answer = answerInput.value.trim();
-                if (answer.startsWith(currentLetter) && categoryAnswers[currentCategory]?.includes(answer)) {
+                let answer = answerInput.value.trim().toLowerCase();
+                let validAnswers = answerDatabase[currentCategory] || [];
+                let matchingAnswers = validAnswers.filter(a => a.toLowerCase().startsWith(currentLetter.toLowerCase()));
+                
+                if (matchingAnswers.includes(answer)) {
                     score++;
                     scoreDisplay.textContent = `Score: ${score}`;
                 }
@@ -155,7 +159,7 @@
             answerInput.focus();
             
             currentLetter = letters[Math.floor(Math.random() * letters.length)];
-            currentCategory = Object.keys(categoryAnswers)[Math.floor(Math.random() * Object.keys(categoryAnswers).length)];
+            currentCategory = categories[Math.floor(Math.random() * categories.length)];
             
             letterDisplay.textContent = currentLetter;
             categoryDisplay.textContent = currentCategory;
