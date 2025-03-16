@@ -125,7 +125,7 @@
         
         function startGame() {
             gameActive = true;
-            startBtn.style.display = "block"; // Ensure button remains visible
+            startBtn.style.display = "inline-block"; // Ensure button remains visible
             startBtn.textContent = "End Game";
             score = 0;
             scoreDisplay.textContent = `Score: ${score}`;
@@ -151,7 +151,7 @@
         function endGame() {
             gameActive = false;
             clearInterval(timer);
-            startBtn.style.display = "block"; // Ensure it reappears
+            startBtn.style.display = "inline-block"; // Ensure button remains visible
             startBtn.textContent = "Start Game";
             answerInput.disabled = true;
             alert(`Time's up! Your score: ${score}`);
