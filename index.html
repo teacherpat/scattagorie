@@ -148,21 +148,11 @@
             }, 1000);
         }
         
-        function nextWord() {
-            if (wordQueue.length === 0) {
-                shuffleArray(wordQueue = [...wordLists[difficultySelect.value]]);
-            }
-            currentWord = wordQueue.shift();
-            wordDisplay.textContent = currentWord;
-            wordDisplay.style.top = `${Math.random() * 150}px`;
-            wordDisplay.style.left = `${Math.random() * 600}px`;
-        }
-        
         function endGame() {
             gameActive = false;
             clearInterval(timer);
+            startBtn.style.display = "block"; // Ensure it reappears
             startBtn.textContent = "Start Game";
-            startBtn.style.display = "block";
             answerInput.disabled = true;
             alert(`Time's up! Your score: ${score}`);
         }
