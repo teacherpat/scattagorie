@@ -3,193 +3,177 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scattergories Game</title>
+    <title>Simple Scattergories</title>
     <style>
-        * {
-            box-sizing: border-box;
-            font-family: 'Arial', sans-serif;
-        }
-        
         body {
-            background-color: #f5f5f5;
-            margin: 0;
+            font-family: 'Arial', sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
             padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        
-        .container {
-            max-width: 800px;
-            width: 100%;
-            background-color: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        
-        header {
             text-align: center;
-            margin-bottom: 20px;
+            background-color: #f5f5f5;
         }
-        
         h1 {
             color: #2c3e50;
+            margin-bottom: 30px;
         }
-        
-        .game-controls {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
+        .game-container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
-        
         .letter-display {
             font-size: 72px;
             font-weight: bold;
-            text-align: center;
             color: #e74c3c;
-            border: 3px solid #e74c3c;
-            border-radius: 50%;
-            width: 120px;
-            height: 120px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px;
+            margin: 20px 0;
+            height: 100px;
         }
-        
-        .timer {
-            font-size: 32px;
-            text-align: center;
-            margin-bottom: 20px;
-            color: #2c3e50;
+        .category-container {
+            margin: 30px 0;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
         }
-        
-        .categories {
-            margin-bottom: 20px;
-        }
-        
-        .category-item {
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-        }
-        
         .category-label {
-            width: 200px;
             font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        .category-title {
+            font-size: 24px;
+            color: #3498db;
+            margin: 10px 0;
+        }
+        .answer-input {
+            width: 80%;
+            padding: 10px;
+            font-size: 18px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        .timer {
+            font-size: 36px;
+            font-weight: bold;
+            margin: 20px 0;
             color: #2c3e50;
         }
-        
-        .category-input {
-            flex: 1;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        
-        button {
+        .btn {
             background-color: #3498db;
             color: white;
             border: none;
-            padding: 10px 20px;
-            font-size: 16px;
+            padding: 12px 30px;
+            font-size: 18px;
             border-radius: 5px;
             cursor: pointer;
             transition: background-color 0.3s;
+            margin-top: 20px;
         }
-        
-        button:hover {
+        .btn:hover {
             background-color: #2980b9;
         }
-        
-        .start-btn {
-            background-color: #2ecc71;
-        }
-        
-        .start-btn:hover {
-            background-color: #27ae60;
-        }
-        
-        .stop-btn {
-            background-color: #e74c3c;
-        }
-        
-        .stop-btn:hover {
-            background-color: #c0392b;
+        .btn:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Scattergories</h1>
-            <p>Think of words that start with the given letter for each category!</p>
-        </header>
+    <h1>Simple Scattergories</h1>
+    
+    <div class="game-container">
+        <div class="letter-display" id="letter-display">-</div>
         
-        <div class="game-controls">
-            <button class="start-btn">Start Game</button>
-            <button class="stop-btn">Stop Game</button>
+        <div class="category-container">
+            <div class="category-label">Category:</div>
+            <div class="category-title" id="category-display">Press Start to Play</div>
+            <input type="text" class="answer-input" id="answer-input" placeholder="Your answer..." disabled>
         </div>
         
-        <div class="letter-display">A</div>
+        <div class="timer" id="timer">60</div>
         
-        <div class="timer">Time: 60</div>
-        
-        <div class="categories">
-            <div class="category-item">
-                <span class="category-label">1. Countries</span>
-                <input type="text" class="category-input" disabled>
-            </div>
-            <div class="category-item">
-                <span class="category-label">2. Foods</span>
-                <input type="text" class="category-input" disabled>
-            </div>
-            <div class="category-item">
-                <span class="category-label">3. Animals</span>
-                <input type="text" class="category-input" disabled>
-            </div>
-            <div class="category-item">
-                <span class="category-label">4. Sports</span>
-                <input type="text" class="category-input" disabled>
-            </div>
-            <div class="category-item">
-                <span class="category-label">5. Celebrities</span>
-                <input type="text" class="category-input" disabled>
-            </div>
-            <div class="category-item">
-                <span class="category-label">6. Jobs</span>
-                <input type="text" class="category-input" disabled>
-            </div>
-            <div class="category-item">
-                <span class="category-label">7. Movies/TV Shows</span>
-                <input type="text" class="category-input" disabled>
-            </div>
-            <div class="category-item">
-                <span class="category-label">8. Items in a House</span>
-                <input type="text" class="category-input" disabled>
-            </div>
-            <div class="category-item">
-                <span class="category-label">9. Cities</span>
-                <input type="text" class="category-input" disabled>
-            </div>
-            <div class="category-item">
-                <span class="category-label">10. Things that are Round</span>
-                <input type="text" class="category-input" disabled>
-            </div>
-            <div class="category-item">
-                <span class="category-label">11. Musical Instruments</span>
-                <input type="text" class="category-input" disabled>
-            </div>
-            <div class="category-item">
-                <span class="category-label">12. Vehicles</span>
-                <input type="text" class="category-input" disabled>
-            </div>
-        </div>
+        <button class="btn" id="start-btn">Start Game</button>
     </div>
 
     <script>
-        // JavaScript functionality will be added here later
+        // List of possible categories
+        const categories = [
+            "Countries", "Cities", "Animals", "Foods", "Sports",
+            "Occupations", "Celebrities", "Movies", "Musical Instruments",
+            "Clothing Items", "Household Items", "Book Titles"
+        ];
+        
+        // List of letters (excluding uncommon letters Q, U, V, X, Z)
+        const letters = "ABCDEFGHIJKLMNOPRSTWYL".split('');
+        
+        let timeLeft = 60;
+        let timer;
+        let gameActive = false;
+        
+        const letterDisplay = document.getElementById('letter-display');
+        const categoryDisplay = document.getElementById('category-display');
+        const answerInput = document.getElementById('answer-input');
+        const timerElement = document.getElementById('timer');
+        const startBtn = document.getElementById('start-btn');
+        
+        startBtn.addEventListener('click', () => {
+            if (gameActive) {
+                // End the game if it's already running
+                endGame();
+            } else {
+                // Start a new game
+                startGame();
+            }
+        });
+        
+        function startGame() {
+            gameActive = true;
+            startBtn.textContent = "End Game";
+            
+            // Reset timer
+            timeLeft = 60;
+            timerElement.textContent = timeLeft;
+            
+            // Enable input
+            answerInput.disabled = false;
+            answerInput.value = '';
+            answerInput.focus();
+            
+            // Select random letter and category
+            const randomLetter = letters[Math.floor(Math.random() * letters.length)];
+            const randomCategory = categories[Math.floor(Math.random() * categories.length)];
+            
+            letterDisplay.textContent = randomLetter;
+            categoryDisplay.textContent = randomCategory;
+            
+            // Start timer
+            timer = setInterval(() => {
+                timeLeft--;
+                timerElement.textContent = timeLeft;
+                
+                if (timeLeft <= 10) {
+                    timerElement.style.color = '#e74c3c';
+                }
+                
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+        
+        function endGame() {
+            gameActive = false;
+            clearInterval(timer);
+            startBtn.textContent = "Start Game";
+            answerInput.disabled = true;
+            timerElement.style.color = '#2c3e50';
+            
+            // Here you could add score calculation or validation logic
+            alert(`Time's up! Your answer: ${answerInput.value}`);
+        }
     </script>
 </body>
 </html>
+
