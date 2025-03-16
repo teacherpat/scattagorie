@@ -122,7 +122,7 @@
     </div>
     <div class="score" id="score" style="display: none; font-size: 24px; margin-top: 20px;"></div>
     <audio id="correct-sound" src="https://www.fesliyanstudios.com/play-mp3/4386"></audio>
-    <audio id="incorrect-sound" src="https://www.fesliyanstudios.com/play-mp3/4387"></audio>
+    <audio id="incorrect-sound" src="https://www.fesliyanstudios.com/play-mp3/4385"></audio>
     
     <script>
         const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
@@ -131,43 +131,50 @@
             B1: ["Countries", "Capitals", "Professions", "Musical Instruments", "Sports", "Vehicles", "Brands"],
             C1: ["Philosophers", "Scientific Terms", "Historical Figures", "Art Movements", "Medical Terms"],
         };
-        let validAnswers = { "Fruits": ["Apple", "Apricot", "Avocado"], "Animals": ["Antelope", "Alligator", "Armadillo"] };
+        let validAnswers = { "Historical Figures": ["Abraham Lincoln", "Albert Einstein", "Napoleon", "Cleopatra"] };
 
         let timerInterval;
         let score = 0;
         let timeLeft = 120;
 
         document.getElementById("start").addEventListener("click", function() {
+            startGame();
+        });
+
+        function startGame() {
             document.getElementById("start").style.display = "none";
             document.querySelector(".game-container").style.display = "block";
             document.getElementById("timer").style.display = "block";
             document.getElementById("score").style.display = "none";
             score = 0;
             timeLeft = 120;
-            startGame();
             startTimer();
-        });
+            generateNewRound();
+        }
 
-        document.getElementById("answer").addEventListener("keydown", function(event) {
-            if (event.key === "Enter") {
-                checkAnswer();
-            }
-        });
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById("timer").innerText = `${timeLeft}s`;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    document.getElementById("score").innerText = `Game Over! Score: ${score}`;
+                    document.getElementById("score").style.display = "block";
+                }
+            }, 1000);
+        }
 
-        function checkAnswer() {
-            let answer = document.getElementById("answer").value.trim();
-            let letter = document.getElementById("random-letter").innerText;
-            let category = document.getElementById("category").innerText;
+        document.getElementById("skip").addEventListener("click", generateNewRound);
+
+        function generateNewRound() {
+            let letter = letters[Math.floor(Math.random() * letters.length)];
+            let difficulty = document.getElementById("difficulty").value;
+            let categoryList = categories[difficulty];
+            let category = categoryList[Math.floor(Math.random() * categoryList.length)];
             
-            if (answer.charAt(0).toUpperCase() === letter && (validAnswers[category]?.includes(answer) || category === "Any Word")) {
-                document.getElementById("correct-sound").play();
-                score++;
-                startGame();
-            } else {
-                document.getElementById("incorrect-sound").play();
-                document.getElementById("answer").classList.add("incorrect");
-                setTimeout(() => document.getElementById("answer").classList.remove("incorrect"), 500);
-            }
+            document.getElementById("random-letter").innerText = letter;
+            document.getElementById("category").innerText = category;
         }
     </script>
 </body>
