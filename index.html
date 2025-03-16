@@ -100,12 +100,12 @@
 <body>
     <button class="start-button" id="start">Start Game</button>
     <select class="difficulty" id="difficulty">
-        <option>A1</option>
-        <option>A2</option>
-        <option>B1</option>
-        <option>B2</option>
-        <option>C1</option>
-        <option>C2</option>
+        <option value="A1">A1</option>
+        <option value="A2">A2</option>
+        <option value="B1">B1</option>
+        <option value="B2">B2</option>
+        <option value="C1">C1</option>
+        <option value="C2">C2</option>
     </select>
     <label class="hint-toggle">Show Hints: <input type="checkbox" id="show-hints" style="width: auto;"></label>
     <div class="timer" id="timer" style="display: none;">120s</div>
@@ -166,15 +166,24 @@
         }
 
         document.getElementById("skip").addEventListener("click", generateNewRound);
+        document.getElementById("answer").addEventListener("keydown", function(event) {
+            if (event.key === "Enter") {
+                checkAnswer();
+            }
+        });
 
-        function generateNewRound() {
-            let letter = letters[Math.floor(Math.random() * letters.length)];
-            let difficulty = document.getElementById("difficulty").value;
-            let categoryList = categories[difficulty];
-            let category = categoryList[Math.floor(Math.random() * categoryList.length)];
+        function checkAnswer() {
+            let answer = document.getElementById("answer").value.trim();
+            let letter = document.getElementById("random-letter").innerText;
+            let category = document.getElementById("category").innerText;
             
-            document.getElementById("random-letter").innerText = letter;
-            document.getElementById("category").innerText = category;
+            if (answer.charAt(0).toUpperCase() === letter && validAnswers[category]?.includes(answer)) {
+                document.getElementById("correct-sound").play();
+                score++;
+                generateNewRound();
+            } else {
+                document.getElementById("incorrect-sound").play();
+            }
         }
     </script>
 </body>
