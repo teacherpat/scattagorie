@@ -3,168 +3,193 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Letter & Category Game</title>
+    <title>Scattergories Game</title>
     <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+        
         body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background-color: white;
-            color: black;
+            background-color: #f5f5f5;
             margin: 0;
             padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            height: 100vh;
         }
-        .game-container {
+        
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            color: #2c3e50;
+        }
+        
+        .game-controls {
             display: flex;
-            flex-direction: column;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        
+        .letter-display {
+            font-size: 72px;
+            font-weight: bold;
+            text-align: center;
+            color: #e74c3c;
+            border: 3px solid #e74c3c;
+            border-radius: 50%;
+            width: 120px;
+            height: 120px;
+            display: flex;
             align-items: center;
             justify-content: center;
-            width: 80%;
-            max-width: 600px;
+            margin: 0 auto 20px;
         }
-        .letter {
-            font-size: 100px;
-            font-weight: bold;
-            color: darkblue;
-            text-shadow: 2px 2px 4px lightgray;
-        }
-        .category {
-            font-size: 24px;
-            margin-top: 10px;
-            color: darkblue;
-        }
-        .category span {
-            font-size: 30px;
-            color: black;
-            font-weight: bold;
-        }
-        .input-box {
-            margin-top: 20px;
-        }
-        input {
-            font-size: 20px;
-            padding: 10px;
-            border: 2px solid black;
-            border-radius: 10px;
-            width: 300px;
-            box-shadow: 4px 4px 10px gray;
-            text-align: center;
-        }
+        
         .timer {
             font-size: 32px;
-            color: red;
-            font-weight: bold;
-            margin-top: 10px;
-        }
-        .difficulty, .hint-toggle {
-            margin-bottom: 10px;
-        }
-        .button-container {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        .button {
-            background: lightblue;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 10px;
-            font-size: 18px;
-            cursor: pointer;
-        }
-        .start-button {
-            background: green;
-            color: white;
-            font-size: 20px;
-            padding: 15px 25px;
-            border-radius: 10px;
+            text-align: center;
             margin-bottom: 20px;
+            color: #2c3e50;
+        }
+        
+        .categories {
+            margin-bottom: 20px;
+        }
+        
+        .category-item {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .category-label {
+            width: 200px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .category-input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
             cursor: pointer;
+            transition: background-color 0.3s;
         }
-        .incorrect {
-            border-color: red;
-            background-color: #ffcccc;
+        
+        button:hover {
+            background-color: #2980b9;
         }
-        .hint {
-            font-size: 18px;
-            color: darkred;
-            margin-top: 10px;
-            display: none;
+        
+        .start-btn {
+            background-color: #2ecc71;
+        }
+        
+        .start-btn:hover {
+            background-color: #27ae60;
+        }
+        
+        .stop-btn {
+            background-color: #e74c3c;
+        }
+        
+        .stop-btn:hover {
+            background-color: #c0392b;
         }
     </style>
 </head>
 <body>
-    <button class="start-button" id="start">Start Game</button>
-    <select class="difficulty" id="difficulty">
-        <option value="A1">A1</option>
-        <option value="A2">A2</option>
-        <option value="B1">B1</option>
-        <option value="B2">B2</option>
-        <option value="C1">C1</option>
-        <option value="C2">C2</option>
-    </select>
-    <label class="hint-toggle">Show Hints: <input type="checkbox" id="show-hints" style="width: auto;"></label>
-    <div class="timer" id="timer" style="display: none;">120s</div>
-    <div class="game-container" style="display: none;">
-        <div class="letter" id="random-letter">A</div>
-        <div class="category">Category: <span id="category">Historical Figures</span></div>
-        <div class="input-box">
-            <input type="text" id="answer" placeholder="Type your answer...">
+    <div class="container">
+        <header>
+            <h1>Scattergories</h1>
+            <p>Think of words that start with the given letter for each category!</p>
+        </header>
+        
+        <div class="game-controls">
+            <button class="start-btn">Start Game</button>
+            <button class="stop-btn">Stop Game</button>
         </div>
-        <div class="hint" id="hint"></div>
-        <div class="button-container">
-            <button class="button" id="skip">Skip</button>
+        
+        <div class="letter-display">A</div>
+        
+        <div class="timer">Time: 60</div>
+        
+        <div class="categories">
+            <div class="category-item">
+                <span class="category-label">1. Countries</span>
+                <input type="text" class="category-input" disabled>
+            </div>
+            <div class="category-item">
+                <span class="category-label">2. Foods</span>
+                <input type="text" class="category-input" disabled>
+            </div>
+            <div class="category-item">
+                <span class="category-label">3. Animals</span>
+                <input type="text" class="category-input" disabled>
+            </div>
+            <div class="category-item">
+                <span class="category-label">4. Sports</span>
+                <input type="text" class="category-input" disabled>
+            </div>
+            <div class="category-item">
+                <span class="category-label">5. Celebrities</span>
+                <input type="text" class="category-input" disabled>
+            </div>
+            <div class="category-item">
+                <span class="category-label">6. Jobs</span>
+                <input type="text" class="category-input" disabled>
+            </div>
+            <div class="category-item">
+                <span class="category-label">7. Movies/TV Shows</span>
+                <input type="text" class="category-input" disabled>
+            </div>
+            <div class="category-item">
+                <span class="category-label">8. Items in a House</span>
+                <input type="text" class="category-input" disabled>
+            </div>
+            <div class="category-item">
+                <span class="category-label">9. Cities</span>
+                <input type="text" class="category-input" disabled>
+            </div>
+            <div class="category-item">
+                <span class="category-label">10. Things that are Round</span>
+                <input type="text" class="category-input" disabled>
+            </div>
+            <div class="category-item">
+                <span class="category-label">11. Musical Instruments</span>
+                <input type="text" class="category-input" disabled>
+            </div>
+            <div class="category-item">
+                <span class="category-label">12. Vehicles</span>
+                <input type="text" class="category-input" disabled>
+            </div>
         </div>
     </div>
-    <div class="score" id="score" style="display: none; font-size: 24px; margin-top: 20px;"></div>
-    <audio id="correct-sound" src="https://www.fesliyanstudios.com/play-mp3/4386"></audio>
-    <audio id="incorrect-sound" src="https://www.fesliyanstudios.com/play-mp3/4385"></audio>
-    
+
     <script>
-        const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
-        const categories = {
-            A1: ["Fruits", "Animals", "Colors", "Shapes", "Weather", "Clothing", "Body Parts", "Household Items", "Drinks", "Toys"],
-            B1: ["Countries", "Capitals", "Professions", "Musical Instruments", "Sports", "Vehicles", "Brands"],
-            C1: ["Philosophers", "Scientific Terms", "Historical Figures", "Art Movements", "Medical Terms"],
-        };
-        let validAnswers = { "Historical Figures": ["Abraham Lincoln", "Albert Einstein", "Napoleon", "Cleopatra"] };
-
-        let timerInterval;
-        let score = 0;
-        let timeLeft = 120;
-
-        document.getElementById("start").addEventListener("click", function() {
-            startGame();
-        });
-
-        document.getElementById("difficulty").addEventListener("change", function() {
-            generateNewRound();
-        });
-
-        function startGame() {
-            document.getElementById("start").style.display = "none";
-            document.querySelector(".game-container").style.display = "block";
-            document.getElementById("timer").style.display = "block";
-            document.getElementById("score").style.display = "none";
-            score = 0;
-            timeLeft = 120;
-            startTimer();
-            generateNewRound();
-        }
-
-        function generateNewRound() {
-            let difficulty = document.getElementById("difficulty").value;
-            let categoryList = categories[difficulty] || categories.A1;
-            let letter = letters[Math.floor(Math.random() * letters.length)];
-            let category = categoryList[Math.floor(Math.random() * categoryList.length)];
-            
-            document.getElementById("random-letter").innerText = letter;
-            document.getElementById("category").innerText = category;
-        }
+        // JavaScript functionality will be added here later
     </script>
 </body>
 </html>
