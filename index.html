@@ -86,4 +86,89 @@
             cursor: pointer;
         }
         .incorrect {
-            border
+            border-color: red;
+            background-color: #ffcccc;
+        }
+        .hint {
+            font-size: 18px;
+            color: darkred;
+            margin-top: 10px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <button class="start-button" id="start">Start Game</button>
+    <select class="difficulty" id="difficulty">
+        <option>A1</option>
+        <option>A2</option>
+        <option>B1</option>
+        <option>B2</option>
+        <option>C1</option>
+        <option>C2</option>
+    </select>
+    <label class="hint-toggle">Show Hints: <input type="checkbox" id="show-hints" style="width: auto;"></label>
+    <div class="timer" id="timer" style="display: none;">120s</div>
+    <div class="game-container" style="display: none;">
+        <div class="letter" id="random-letter">A</div>
+        <div class="category">Category: <span id="category">Historical Figures</span></div>
+        <div class="input-box">
+            <input type="text" id="answer" placeholder="Type your answer...">
+        </div>
+        <div class="hint" id="hint"></div>
+        <div class="button-container">
+            <button class="button" id="skip">Skip</button>
+        </div>
+    </div>
+    <div class="score" id="score" style="display: none; font-size: 24px; margin-top: 20px;"></div>
+    <audio id="correct-sound" src="https://www.fesliyanstudios.com/play-mp3/4386"></audio>
+    <audio id="incorrect-sound" src="https://www.fesliyanstudios.com/play-mp3/4387"></audio>
+    
+    <script>
+        const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+        const categories = {
+            A1: ["Fruits", "Animals", "Colors", "Shapes", "Weather", "Clothing", "Body Parts", "Household Items", "Drinks", "Toys"],
+            B1: ["Countries", "Capitals", "Professions", "Musical Instruments", "Sports", "Vehicles", "Brands"],
+            C1: ["Philosophers", "Scientific Terms", "Historical Figures", "Art Movements", "Medical Terms"],
+        };
+        let validAnswers = { "Fruits": ["Apple", "Apricot", "Avocado"], "Animals": ["Antelope", "Alligator", "Armadillo"] };
+
+        let timerInterval;
+        let score = 0;
+        let timeLeft = 120;
+
+        document.getElementById("start").addEventListener("click", function() {
+            document.getElementById("start").style.display = "none";
+            document.querySelector(".game-container").style.display = "block";
+            document.getElementById("timer").style.display = "block";
+            document.getElementById("score").style.display = "none";
+            score = 0;
+            timeLeft = 120;
+            startGame();
+            startTimer();
+        });
+
+        document.getElementById("answer").addEventListener("keydown", function(event) {
+            if (event.key === "Enter") {
+                checkAnswer();
+            }
+        });
+
+        function checkAnswer() {
+            let answer = document.getElementById("answer").value.trim();
+            let letter = document.getElementById("random-letter").innerText;
+            let category = document.getElementById("category").innerText;
+            
+            if (answer.charAt(0).toUpperCase() === letter && (validAnswers[category]?.includes(answer) || category === "Any Word")) {
+                document.getElementById("correct-sound").play();
+                score++;
+                startGame();
+            } else {
+                document.getElementById("incorrect-sound").play();
+                document.getElementById("answer").classList.add("incorrect");
+                setTimeout(() => document.getElementById("answer").classList.remove("incorrect"), 500);
+            }
+        }
+    </script>
+</body>
+</html>
