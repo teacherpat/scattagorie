@@ -61,6 +61,7 @@
             cursor: pointer;
             transition: background-color 0.3s;
             margin-top: 20px;
+            display: block;
         }
         .btn:hover {
             background-color: #2980b9;
@@ -122,20 +123,9 @@
             }
         });
         
-        answerInput.addEventListener("keydown", (event) => {
-            if (event.key === "Enter" && gameActive) {
-                if (answerInput.value.trim().toLowerCase() === currentWord.toLowerCase()) {
-                    score++;
-                    scoreDisplay.textContent = `Score: ${score}`;
-                    chimeSound.play();
-                }
-                answerInput.value = '';
-                nextWord();
-            }
-        });
-        
         function startGame() {
             gameActive = true;
+            startBtn.style.display = "block"; // Ensure button remains visible
             startBtn.textContent = "End Game";
             score = 0;
             scoreDisplay.textContent = `Score: ${score}`;
@@ -172,6 +162,7 @@
             gameActive = false;
             clearInterval(timer);
             startBtn.textContent = "Start Game";
+            startBtn.style.display = "block";
             answerInput.disabled = true;
             alert(`Time's up! Your score: ${score}`);
         }
