@@ -1,168 +1,160 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Typing Challenge</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&display=swap');
-        
-        body {
-            font-family: 'Comfortaa', cursive;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            text-align: center;
-            background-color: #f5f5f5;
-            overflow: hidden;
-        }
-        h1 {
-            color: #2c3e50;
-            margin-bottom: 20px;
-        }
-        .game-container {
-            background-color: white;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            position: relative;
-            overflow: hidden;
-            height: 200px;
-        }
-        .word-display {
-            font-size: 48px;
-            font-weight: bold;
-            color: #e74c3c;
-            position: absolute;
-            white-space: nowrap;
-        }
-        .answer-input {
-            width: 80%;
-            padding: 10px;
-            font-size: 24px;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            margin-top: 100px;
-            text-align: center;
-        }
-        .timer, .score-display {
-            font-size: 24px;
-            font-weight: bold;
-            margin: 10px 0;
-            color: #2c3e50;
-        }
-        .btn {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            font-size: 18px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            margin-top: 20px;
-            display: block;
-        }
-        .btn:hover {
-            background-color: #2980b9;
-        }
-        .btn:disabled {
-            background-color: #95a5a6;
-            cursor: not-allowed;
-        }
-    </style>
-</head>
-<body>
-    <h1>Typing Challenge</h1>
-    
-    <div class="game-container">
-        <label for="difficulty">Select Difficulty:</label>
-        <select id="difficulty">
-            <option value="easy">Easy</option>
-            <option value="medium">Medium</option>
-            <option value="hard">Hard</option>
-        </select>
-        
-        <div class="word-display" id="word-display">Press Start</div>
-        <input type="text" class="answer-input" id="answer-input" placeholder="Type here..." disabled>
-        
-        <div class="timer" id="timer">60</div>
-        <div class="score-display" id="score-display">Score: 0</div>
-        
-        <button class="btn" id="start-btn">Start Game</button>
-        <audio id="chime" src="https://www.soundjay.com/button/beep-07.wav"></audio>
-    </div>
+import { initializeApp } from "firebase/app";
+import { getFirestore, doc, setDoc, updateDoc, getDoc, collection, query, orderBy, limit, getDocs } from "firebase/firestore";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { useState, useEffect } from "react";
 
-    <script>
-        const wordLists = {
-            easy: ["jump", "sun", "lake", "kind", "star", "brave", "laugh", "apple", "river", "smile"],
-            medium: ["whisper", "journey", "puzzle", "luminous", "delicate", "serenade", "shimmer", "twilight"],
-            hard: ["ephemeral", "quintessential", "serendipity", "mellifluous", "ineffable", "sonder", "petrichor"]
-        };
-        
-        let timeLeft = 60;
-        let timer;
-        let gameActive = false;
-        let score = 0;
-        let currentWord = "";
-        let wordQueue = [];
-        
-        const wordDisplay = document.getElementById('word-display');
-        const answerInput = document.getElementById('answer-input');
-        const timerElement = document.getElementById('timer');
-        const startBtn = document.getElementById('start-btn');
-        const scoreDisplay = document.getElementById('score-display');
-        const difficultySelect = document.getElementById('difficulty');
-        const chimeSound = document.getElementById('chime');
-        
-        startBtn.addEventListener('click', () => {
-            if (gameActive) {
-                endGame();
-            } else {
-                startGame();
-            }
-        });
-        
-        function startGame() {
-            gameActive = true;
-            startBtn.style.display = "inline-block"; // Ensure button remains visible
-            startBtn.textContent = "End Game";
-            score = 0;
-            scoreDisplay.textContent = `Score: ${score}`;
-            answerInput.disabled = false;
-            answerInput.value = '';
-            answerInput.focus();
-            
-            wordQueue = [...wordLists[difficultySelect.value]];
-            shuffleArray(wordQueue);
-            nextWord();
-            
-            timeLeft = 60;
-            timerElement.textContent = timeLeft;
-            timer = setInterval(() => {
-                timeLeft--;
-                timerElement.textContent = timeLeft;
-                if (timeLeft <= 0) {
-                    endGame();
-                }
-            }, 1000);
-        }
-        
-        function endGame() {
-            gameActive = false;
-            clearInterval(timer);
-            startBtn.style.display = "inline-block"; // Ensure button remains visible
-            startBtn.textContent = "Start Game";
-            answerInput.disabled = true;
-            alert(`Time's up! Your score: ${score}`);
-        }
-        
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-        }
-    </script>
-</body>
-</html>
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_AUTH_DOMAIN",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_STORAGE_BUCKET",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const storage = getStorage(app);
+
+async function createGameSession(playerName, difficulty) {
+  const gameId = Math.random().toString(36).substr(2, 9);
+  await setDoc(doc(db, "games", gameId), {
+    player: playerName,
+    difficulty: difficulty,
+    score: 0,
+    createdAt: new Date(),
+    wordsPlayed: [],
+    currentRound: 0,
+    gameOver: false
+  });
+  return gameId;
+}
+
+async function updateScore(gameId, newScore) {
+  await updateDoc(doc(db, "games", gameId), {
+    score: newScore
+  });
+}
+
+async function getLeaderboard() {
+  const q = query(collection(db, "games"), orderBy("score", "desc"), limit(10));
+  const querySnapshot = await getDocs(q);
+  let leaderboard = [];
+  querySnapshot.forEach(doc => {
+    leaderboard.push(doc.data());
+  });
+  return leaderboard;
+}
+
+async function generateTTS(word) {
+  const ttsUrl = `https://api.tts.example.com/generate?text=${word}`;
+  const audio = new Audio(ttsUrl);
+  await audio.play();
+}
+
+async function checkPlayerInput(gameId, playerInputs, correctWords) {
+  const gameRef = doc(db, "games", gameId);
+  const gameSnap = await getDoc(gameRef);
+  if (gameSnap.exists()) {
+    let gameData = gameSnap.data();
+    let currentScore = gameData.score;
+    let roundResults = [];
+    let roundScore = 0;
+
+    for (let i = 0; i < correctWords.length; i++) {
+      let isCorrect = playerInputs[i].toLowerCase().trim() === correctWords[i].toLowerCase().trim();
+      if (isCorrect) {
+        currentScore += 1;
+        roundScore += 1;
+      }
+      roundResults.push({ word: correctWords[i], playerInput: playerInputs[i], correct: isCorrect });
+    }
+
+    await updateDoc(gameRef, {
+      score: currentScore,
+      wordsPlayed: [...gameData.wordsPlayed, ...roundResults],
+      currentRound: gameData.currentRound + 1
+    });
+
+    return { roundResults, roundScore, totalScore: currentScore };
+  }
+  return null;
+}
+
+async function endGame(gameId) {
+  await updateDoc(doc(db, "games", gameId), {
+    gameOver: true
+  });
+}
+
+export { createGameSession, updateScore, getLeaderboard, generateTTS, checkPlayerInput, endGame };
+
+function GameUI() {
+  const [playerName, setPlayerName] = useState("");
+  const [difficulty, setDifficulty] = useState("A1");
+  const [gameId, setGameId] = useState(null);
+  const [words, setWords] = useState([]);
+  const [playerInputs, setPlayerInputs] = useState(["", "", "", ""]);
+  const [score, setScore] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(100);
+  const [roundResults, setRoundResults] = useState([]);
+
+  useEffect(() => {
+    if (timeLeft > 0) {
+      const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [timeLeft]);
+
+  const startGame = async () => {
+    const newGameId = await createGameSession(playerName, difficulty);
+    setGameId(newGameId);
+  };
+
+  const submitAnswers = async () => {
+    const correctWords = words;
+    const result = await checkPlayerInput(gameId, playerInputs, correctWords);
+    if (result) {
+      setRoundResults(result.roundResults);
+      setScore(result.totalScore);
+    }
+    setTimeout(() => setRoundResults([]), 2000);
+  };
+
+  return (
+    <div>
+      {!gameId ? (
+        <div>
+          <input type="text" placeholder="Enter Name" onChange={(e) => setPlayerName(e.target.value)} />
+          <select onChange={(e) => setDifficulty(e.target.value)}>
+            <option value="A1">A1</option>
+            <option value="A2">A2</option>
+            <option value="B1">B1</option>
+            <option value="B2">B2</option>
+            <option value="C1">C1</option>
+            <option value="C2">C2</option>
+          </select>
+          <button onClick={startGame}>Start Game</button>
+        </div>
+      ) : (
+        <div>
+          <p>Time Left: {timeLeft} seconds</p>
+          <p>Score: {score}</p>
+          {words.map((word, index) => (
+            <input key={index} type="text" value={playerInputs[index]} 
+              onChange={(e) => {
+                let newInputs = [...playerInputs];
+                newInputs[index] = e.target.value;
+                setPlayerInputs(newInputs);
+              }}
+              onKeyDown={(e) => e.key === "Enter" && submitAnswers()}
+            />
+          ))}
+          <button onClick={submitAnswers}>Submit Answers</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default GameUI;
