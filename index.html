@@ -1,160 +1,256 @@
-import { initializeApp } from "firebase/app";
-import { getFirestore, doc, setDoc, updateDoc, getDoc, collection, query, orderBy, limit, getDocs } from "firebase/firestore";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { useState, useEffect } from "react";
-
-const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const storage = getStorage(app);
-
-async function createGameSession(playerName, difficulty) {
-  const gameId = Math.random().toString(36).substr(2, 9);
-  await setDoc(doc(db, "games", gameId), {
-    player: playerName,
-    difficulty: difficulty,
-    score: 0,
-    createdAt: new Date(),
-    wordsPlayed: [],
-    currentRound: 0,
-    gameOver: false
-  });
-  return gameId;
-}
-
-async function updateScore(gameId, newScore) {
-  await updateDoc(doc(db, "games", gameId), {
-    score: newScore
-  });
-}
-
-async function getLeaderboard() {
-  const q = query(collection(db, "games"), orderBy("score", "desc"), limit(10));
-  const querySnapshot = await getDocs(q);
-  let leaderboard = [];
-  querySnapshot.forEach(doc => {
-    leaderboard.push(doc.data());
-  });
-  return leaderboard;
-}
-
-async function generateTTS(word) {
-  const ttsUrl = `https://api.tts.example.com/generate?text=${word}`;
-  const audio = new Audio(ttsUrl);
-  await audio.play();
-}
-
-async function checkPlayerInput(gameId, playerInputs, correctWords) {
-  const gameRef = doc(db, "games", gameId);
-  const gameSnap = await getDoc(gameRef);
-  if (gameSnap.exists()) {
-    let gameData = gameSnap.data();
-    let currentScore = gameData.score;
-    let roundResults = [];
-    let roundScore = 0;
-
-    for (let i = 0; i < correctWords.length; i++) {
-      let isCorrect = playerInputs[i].toLowerCase().trim() === correctWords[i].toLowerCase().trim();
-      if (isCorrect) {
-        currentScore += 1;
-        roundScore += 1;
-      }
-      roundResults.push({ word: correctWords[i], playerInput: playerInputs[i], correct: isCorrect });
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Business ESL Quiz & Vocabulary Review</title>
+  <!-- Import Comfortaa font -->
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Comfortaa', sans-serif;
+      color: blue;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
     }
-
-    await updateDoc(gameRef, {
-      score: currentScore,
-      wordsPlayed: [...gameData.wordsPlayed, ...roundResults],
-      currentRound: gameData.currentRound + 1
-    });
-
-    return { roundResults, roundScore, totalScore: currentScore };
-  }
-  return null;
-}
-
-async function endGame(gameId) {
-  await updateDoc(doc(db, "games", gameId), {
-    gameOver: true
-  });
-}
-
-export { createGameSession, updateScore, getLeaderboard, generateTTS, checkPlayerInput, endGame };
-
-function GameUI() {
-  const [playerName, setPlayerName] = useState("");
-  const [difficulty, setDifficulty] = useState("A1");
-  const [gameId, setGameId] = useState(null);
-  const [words, setWords] = useState([]);
-  const [playerInputs, setPlayerInputs] = useState(["", "", "", ""]);
-  const [score, setScore] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(100);
-  const [roundResults, setRoundResults] = useState([]);
-
-  useEffect(() => {
-    if (timeLeft > 0) {
-      const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
-      return () => clearTimeout(timer);
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
     }
-  }, [timeLeft]);
-
-  const startGame = async () => {
-    const newGameId = await createGameSession(playerName, difficulty);
-    setGameId(newGameId);
-  };
-
-  const submitAnswers = async () => {
-    const correctWords = words;
-    const result = await checkPlayerInput(gameId, playerInputs, correctWords);
-    if (result) {
-      setRoundResults(result.roundResults);
-      setScore(result.totalScore);
+    .quiz-container {
+      flex: 2;
+      background-color: #fff;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      padding: 20px;
+      min-height: 80vh;
+      overflow-y: auto;
     }
-    setTimeout(() => setRoundResults([]), 2000);
-  };
-
-  return (
-    <div>
-      {!gameId ? (
-        <div>
-          <input type="text" placeholder="Enter Name" onChange={(e) => setPlayerName(e.target.value)} />
-          <select onChange={(e) => setDifficulty(e.target.value)}>
-            <option value="A1">A1</option>
-            <option value="A2">A2</option>
-            <option value="B1">B1</option>
-            <option value="B2">B2</option>
-            <option value="C1">C1</option>
-            <option value="C2">C2</option>
-          </select>
-          <button onClick={startGame}>Start Game</button>
+    .video-notes-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      min-height: 80vh;
+    }
+    .video-container {
+      position: relative;
+      width: 100%;
+      padding-bottom: 56.25%; /* 16:9 aspect ratio */
+      background-color: #000;
+    }
+    .video-container iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+    .notes {
+      width: 100%;
+      height: 200px;
+      padding: 10px;
+      font-size: 16px;
+      box-sizing: border-box;
+      resize: vertical;
+    }
+    h2, h3 {
+      margin-top: 0;
+    }
+    .question {
+      margin-bottom: 20px;
+    }
+    .question h3 {
+      margin: 0 0 10px;
+    }
+    .result {
+      font-size: 18px;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      font-family: 'Comfortaa', sans-serif;
+      background-color: #e0e0e0;
+      border: none;
+      cursor: pointer;
+      margin: 5px 0;
+    }
+    /* Vocabulary section styling */
+    #vocabSection {
+      margin-top: 40px;
+      border-top: 2px solid #ccc;
+      padding-top: 20px;
+    }
+    #vocabDisplay {
+      margin-bottom: 10px;
+    }
+    #vocabDefinition {
+      margin-bottom: 10px;
+      display: none;
+    }
+    #vocabProgress {
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Quiz and Vocabulary Section (Left Column) -->
+    <div class="quiz-container">
+      <h2>Business ESL Quiz</h2>
+      <form id="quizForm">
+        <div class="question">
+          <h3>1. Which email greeting is recommended for formal correspondence?</h3>
+          <label><input type="radio" name="q1" value="A"> A. Dear [Person's Name]</label><br>
+          <label><input type="radio" name="q1" value="B"> B. Hi everyone</label><br>
+          <label><input type="radio" name="q1" value="C"> C. To whom it may concern</label><br>
+          <label><input type="radio" name="q1" value="D"> D. Hey!</label>
         </div>
-      ) : (
-        <div>
-          <p>Time Left: {timeLeft} seconds</p>
-          <p>Score: {score}</p>
-          {words.map((word, index) => (
-            <input key={index} type="text" value={playerInputs[index]} 
-              onChange={(e) => {
-                let newInputs = [...playerInputs];
-                newInputs[index] = e.target.value;
-                setPlayerInputs(newInputs);
-              }}
-              onKeyDown={(e) => e.key === "Enter" && submitAnswers()}
-            />
-          ))}
-          <button onClick={submitAnswers}>Submit Answers</button>
+        <div class="question">
+          <h3>2. Which phrase should be avoided when starting an email?</h3>
+          <label><input type="radio" name="q2" value="A"> A. I hope your week is going well</label><br>
+          <label><input type="radio" name="q2" value="B"> B. Let me introduce myself</label><br>
+          <label><input type="radio" name="q2" value="C"> C. To whom it may concern</label><br>
+          <label><input type="radio" name="q2" value="D"> D. Thanks for ...</label>
         </div>
-      )}
+        <div class="question">
+          <h3>3. What does "CC" stand for in emails?</h3>
+          <label><input type="radio" name="q3" value="A"> A. Carbon Copy</label><br>
+          <label><input type="radio" name="q3" value="B"> B. Clever Copy</label><br>
+          <label><input type="radio" name="q3" value="C"> C. Clear Copy</label><br>
+          <label><input type="radio" name="q3" value="D"> D. Conspicuous Copy</label>
+        </div>
+        <div class="question">
+          <h3>4. Which term refers to irrelevant or inappropriate messages sent via email?</h3>
+          <label><input type="radio" name="q4" value="A"> A. Forward</label><br>
+          <label><input type="radio" name="q4" value="B"> B. Spam</label><br>
+          <label><input type="radio" name="q4" value="C"> C. Attach</label><br>
+          <label><input type="radio" name="q4" value="D"> D. Thread</label>
+        </div>
+        <div class="question">
+          <h3>5. Which of the following is a do when writing a business email?</h3>
+          <label><input type="radio" name="q5" value="A"> A. Use a proper greeting</label><br>
+          <label><input type="radio" name="q5" value="B"> B. Use emojis</label><br>
+          <label><input type="radio" name="q5" value="C"> C. Hit "Reply All"</label><br>
+          <label><input type="radio" name="q5" value="D"> D. Use tentative language</label>
+        </div>
+        <button type="button" onclick="checkQuiz()">Submit Quiz</button>
+      </form>
+      <div id="result" class="result"></div>
+      
+      <!-- Vocabulary Spaced Repetition Section -->
+      <div id="vocabSection">
+        <h2>Vocabulary Review</h2>
+        <div id="vocabProgress"></div>
+        <div id="vocabDisplay"></div>
+        <div id="vocabDefinition"></div>
+        <button id="showDefBtn" onclick="showDefinition()">Show Definition</button>
+        <div id="vocabButtons" style="display:none;">
+          <button onclick="markWord(true)">I knew it</button>
+          <button onclick="markWord(false)">I didn't know it</button>
+        </div>
+      </div>
     </div>
-  );
-}
-
-export default GameUI;
+    <!-- Video and Notes Section (Right Column) -->
+    <div class="video-notes-container">
+      <div class="video-container">
+        <iframe src="https://www.youtube.com/embed/ZSi30z0_0po" allowfullscreen></iframe>
+      </div>
+      <textarea class="notes" placeholder="take notes here"></textarea>
+    </div>
+  </div>
+  
+  <script>
+    // Quiz checking function
+    function checkQuiz() {
+      const answers = {
+        q1: "A",
+        q2: "C",
+        q3: "A",
+        q4: "B",
+        q5: "A"
+      };
+      let score = 0;
+      for (let q in answers) {
+        const radios = document.getElementsByName(q);
+        for (let i = 0; i < radios.length; i++) {
+          if (radios[i].checked && radios[i].value === answers[q]) {
+            score++;
+          }
+        }
+      }
+      document.getElementById("result").innerText = "Your score: " + score + " / 5";
+    }
+    
+    // Vocabulary spaced repetition program
+    const vocabWords = [
+      { word: "Salutation", definition: "The greeting at the beginning of an email or letter." },
+      { word: "Forward", definition: "The act of sending a received email on to another recipient." },
+      { word: "CC (Carbon Copy)", definition: "Including additional recipients in an email so they receive a copy." },
+      { word: "Attach", definition: "To include a document or file with an email." },
+      { word: "Thread", definition: "A series of connected email messages on a single topic." },
+      { word: "Spam", definition: "Unsolicited or irrelevant emails, often sent in bulk." },
+      { word: "Etiquette", definition: "The set of customary rules and polite behaviors expected in professional email communication." },
+      { word: "Template", definition: "A pre-designed format or draft for emails that may require customization." },
+      { word: "Tone", definition: "The overall attitude or character conveyed in the email’s language." },
+      { word: "Correspondence", definition: "The written exchange of messages, typically referring to formal business communication." }
+    ];
+    
+    let vocabQueue = [...vocabWords]; // clone the array
+    let currentVocab = null;
+    
+    function updateVocabProgress() {
+      const progress = document.getElementById("vocabProgress");
+      progress.innerText = "Words remaining: " + vocabQueue.length;
+    }
+    
+    function showNextVocab() {
+      updateVocabProgress();
+      // Hide definition and action buttons until user requests
+      document.getElementById("vocabDefinition").style.display = "none";
+      document.getElementById("vocabButtons").style.display = "none";
+      document.getElementById("showDefBtn").style.display = "inline-block";
+      
+      if (vocabQueue.length === 0) {
+        document.getElementById("vocabDisplay").innerText = "Great job! You've reviewed all words.";
+        document.getElementById("vocabDefinition").innerText = "";
+        document.getElementById("showDefBtn").style.display = "none";
+        return;
+      }
+      currentVocab = vocabQueue[0];
+      document.getElementById("vocabDisplay").innerText = "Word: " + currentVocab.word;
+    }
+    
+    function showDefinition() {
+      if (currentVocab) {
+        document.getElementById("vocabDefinition").innerText = "Definition: " + currentVocab.definition;
+        document.getElementById("vocabDefinition").style.display = "block";
+        document.getElementById("showDefBtn").style.display = "none";
+        document.getElementById("vocabButtons").style.display = "block";
+      }
+    }
+    
+    function markWord(knewIt) {
+      if (!currentVocab) return;
+      // Remove the current word from the queue
+      vocabQueue.shift();
+      if (!knewIt) {
+        // If the user didn't know it, push the word to the end of the queue for further review
+        vocabQueue.push(currentVocab);
+      }
+      currentVocab = null;
+      showNextVocab();
+    }
+    
+    // Initialize vocabulary review on page load
+    window.onload = function() {
+      showNextVocab();
+    }
+  </script>
+</body>
+</html>
