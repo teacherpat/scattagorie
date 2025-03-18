@@ -7,17 +7,47 @@
   <!-- Import Comfortaa font -->
   <link href="https://fonts.googleapis.com/css2?family=Comfortaa&display=swap" rel="stylesheet">
   <style>
+    /* Global Styles */
     body {
       font-family: 'Comfortaa', sans-serif;
-      color: blue;
       margin: 0;
+      padding: 0;
+      background-color: #ffffff; /* Fully white background */
+      color: #001f3f; /* Navy blue text */
+    }
+    /* Header with Logo and Title */
+    .header {
+      display: flex;
+      align-items: center;
+      background-color: #ffffff;
       padding: 20px;
-      background-color: #f5f5f5;
+      border-bottom: 1px solid #ddd;
+    }
+    .header img {
+      height: 40px; /* Adjust as needed */
+      margin-right: 10px;
+    }
+    .header h1 {
+      font-size: 32px;
+      color: #001f3f; /* Navy */
+      margin: 0;
+    }
+    /* Main Container */
+    .page-content {
+      padding: 20px;
     }
     .container {
       display: flex;
       flex-wrap: wrap;
       gap: 20px;
+    }
+    /* Softened corners for major containers */
+    .quiz-container,
+    .video-notes-container,
+    .vocab-container,
+    .video-container,
+    .notes {
+      border-radius: 8px;
     }
     .quiz-container {
       flex: 2;
@@ -38,6 +68,7 @@
       width: 100%;
       padding-bottom: 56.25%; /* 16:9 aspect ratio */
       background-color: #000;
+      overflow: hidden;
     }
     .video-container iframe {
       position: absolute;
@@ -68,7 +99,6 @@
       background-color: #fff;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
       padding: 20px;
-      border-radius: 8px;
     }
     .vocab-header {
       font-size: 14px;
@@ -100,17 +130,6 @@
       cursor: pointer;
       border-radius: 4px;
     }
-    #showDefBtn {
-      padding: 10px 20px;
-      font-size: 16px;
-      font-family: 'Comfortaa', sans-serif;
-      background-color: #e0e0e0;
-      border: none;
-      cursor: pointer;
-      border-radius: 4px;
-      display: block;
-      margin: 0 auto;
-    }
     #resetContainer {
       text-align: center;
       margin-top: 20px;
@@ -128,35 +147,45 @@
   </style>
 </head>
 <body>
-  <div class="container">
-    <!-- Quizrise Quiz Section -->
-    <div class="quiz-container">
-      <iframe src="https://app.quizrise.com/play/cm5ywjbz50001tagoas0ncne3" frameborder="0"></iframe>
-    </div>
-    <!-- Video and Notes Section -->
-    <div class="video-notes-container">
-      <div class="video-container">
-        <iframe src="https://www.youtube.com/embed/ZSi30z0_0po" allowfullscreen></iframe>
-      </div>
-      <!-- Simple notes section -->
-      <textarea class="notes" placeholder="take notes here"></textarea>
-    </div>
+
+  <!-- Header Section with Logo -->
+  <div class="header">
+    <!-- Replace "TeacherPatLogo.png" with the actual filename/path for your logo -->
+    <img src="TeacherPatLogo.png" alt="Teacher Pat Logo">
+    <h1>Emails</h1>
   </div>
 
-  <!-- Vocabulary Spaced Repetition Section -->
-  <div class="vocab-container">
-    <div class="vocab-header">Vocabulary review</div>
-    <div id="vocabDisplay"></div>
-    <div id="vocabDefinition"></div>
-    <div class="vocab-buttons" id="initialButtons">
-      <button onclick="handleKnowIt()">I know it</button>
-      <button onclick="handleNotSure()">I'm not sure</button>
+  <div class="page-content">
+    <div class="container">
+      <!-- Quizrise Quiz Section -->
+      <div class="quiz-container">
+        <iframe src="https://app.quizrise.com/play/cm5ywjbz50001tagoas0ncne3" frameborder="0"></iframe>
+      </div>
+      <!-- Video and Notes Section -->
+      <div class="video-notes-container">
+        <div class="video-container">
+          <iframe src="https://www.youtube.com/embed/ZSi30z0_0po" allowfullscreen></iframe>
+        </div>
+        <!-- Updated placeholder -->
+        <textarea class="notes" placeholder="take notes while you watch the video"></textarea>
+      </div>
     </div>
-    <div class="vocab-buttons" id="nextButton" style="display:none;">
-      <button onclick="handleNextWord()">Next Word</button>
-    </div>
-    <div id="resetContainer">
-      <button onclick="resetVocab()">Reset</button>
+
+    <!-- Vocabulary Spaced Repetition Section -->
+    <div class="vocab-container">
+      <div class="vocab-header">Vocabulary review</div>
+      <div id="vocabDisplay"></div>
+      <div id="vocabDefinition"></div>
+      <div class="vocab-buttons" id="initialButtons">
+        <button onclick="handleKnowIt()">I know it</button>
+        <button onclick="handleNotSure()">I'm not sure</button>
+      </div>
+      <div class="vocab-buttons" id="nextButton" style="display:none;">
+        <button onclick="handleNextWord()">Next Word</button>
+      </div>
+      <div id="resetContainer">
+        <button onclick="resetVocab()">Reset</button>
+      </div>
     </div>
   </div>
 
